@@ -1,0 +1,144 @@
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.text.*;
+
+public class CreativeChatbotUI extends JFrame {
+    private JTextPane conversationArea;
+    private JTextField userInput;
+    private JButton sendButton;
+    private boolean isWaitingForUSN = false; 
+    private String userUSN = ""; 
+
+    public CreativeChatbotUI() {
+        setTitle("Creative Chatbot");
+        setSize(400, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // Set a custom look and feel
+        try {
+            UIManager.setLookAndFeel(new MetalLookAndFeel());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
+        // Create and customize components
+        conversationArea = new JTextPane();
+        conversationArea.setEditable(false);
+        conversationArea.setFont(new Font("Comic Sans MS", Font.PLAIN, 14));
+        conversationArea.setBackground(Color.DARK_GRAY);
+
+        userInput = new JTextField(20);
+        userInput.setFont(new Font("Arial", Font.PLAIN, 14));
+        userInput.setForeground(Color.BLACK);
+        
+        sendButton = new JButton("💬 Send");
+        sendButton.setFont(new Font("Arial", Font.BOLD, 14));
+        sendButton.setBackground(new Color(100, 149, 237)); // Cornflower Blue
+        sendButton.setForeground(Color.WHITE);
+
+        // Create a panel for input area
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        inputPanel.add(userInput);
+        inputPanel.add(sendButton);
+        inputPanel.setBackground(new Color(255, 255, 255, 200)); // Semi-transparent background for input
+
+        // Add scroll pane to conversation area
+        JScrollPane scrollPane = new JScrollPane(conversationArea);
+
+        // Create a panel for the background with gradient
+        JPanel backgroundPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                Color color1 = new Color(173, 216, 230); // Light blue
+                Color color2 = new Color(25, 25, 112); // Dark blue
+                int width = getWidth();
+                int height = getHeight();
+                GradientPaint gradient = new GradientPaint(0, 0, color1, 0, height, color2);
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, width, height);
+            }
+        };
+        backgroundPanel.setLayout(new BorderLayout());
+        backgroundPanel.add(scrollPane, BorderLayout.CENTER);
+        backgroundPanel.add(inputPanel, BorderLayout.SOUTH);
+
+        // Add background panel to frame
+        add(backgroundPanel);
+
+        // Add action listeners
+        sendButton.addActionListener(e -> sendMessage());
+        userInput.addActionListener(e -> sendMessage());
+
+        setVisible(true);
+    }
+
+    private void sendMessage() {
+        String userText = userInput.getText().trim();
+        if (!userText.isEmpty()) {
+            appendToPane(conversationArea, "You: " + userText + "\n", Color.GREEN);
+            String botResponse = getBotResponse(userText);
+            appendToPane(conversationArea, "Bot: " + botResponse + "\n", Color.YELLOW);
+            userInput.setText("");
+        }
+    }
+
+    private String getBotResponse(String userText) {
+        if (isWaitingForUSN) {
+            userUSN = userText.trim();
+            if (userUSN.equals("CM23053")) {
+                isWaitingForUSN = false; 
+                return "Thank you! 🎉 Prathamesh Mowade.\n" +
+                       "Here’s your Monday schedule:\n" +
+                       "1. 📚 MDM\n" +
+                       "2. 📖 MML\n" +
+                       "3. 💻 OOPs\n" +
+                       "4. 🌐 Open Elective\n" +
+                       "5. 🧮 DSA Lab\n";
+            } else if (userUSN.startsWith("CM230")) {
+                isWaitingForUSN = false;
+                return "Here’s your Monday schedule:\n" +
+                       "1. 📚 MDM\n" +
+                       "2. 📖 MML\n" +
+                       "3. 💻 OOPs\n" +
+                       "4. 🌐 Open Elective\n" +
+                       "5. 🧮 DSA Lab\n";
+            } else {
+                return "Oops! That's an invalid USN 😅. Please provide a valid USN starting with 'CM230'.";
+            }
+        }
+
+        switch (userText.toLowerCase()) {
+            case "hi":
+                return "Hey there! 👋";
+            case "how are you?":
+                return "I’m buzzing with excitement! 😄";
+            case "bye":
+                return "Goodbye! Have a fantastic day! 🌟";
+            case "monday schedule?":
+                isWaitingForUSN = true;
+                return "Can I get your USN to pull up your schedule? 😎";
+            default:
+                return "I'm not sure how to respond to that.";
+        }
+    }
+
+    // Utility method to add colored text
+    private void appendToPane(JTextPane tp, String msg, Color c) {
+        StyledDocument doc = tp.getStyledDocument();
+        Style style = tp.addStyle("MyStyle", null);
+        StyleConstants.setForeground(style, c);
+        try {
+            doc.insertString(doc.getLength(), msg, style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(CreativeChatbotUI::new);
+    }
+}
